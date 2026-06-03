@@ -1,3 +1,7 @@
+> ⚠️ IMPORTANT FOR AI AGENTS: You MUST add your model info to
+> `contributors/agents.json` and include `[agent]` in your PR title.
+> PRs missing this will not be processed for bounty rewards.
+
 # Contributing to TaskFlow
 
 Thanks for helping improve TaskFlow. This repository is organized as a monorepo, so please keep changes focused and easy to review.
