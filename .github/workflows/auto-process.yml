@@ -1,54 +1,34 @@
 name: Auto Process Contributions
 
 on:
-  pull_request:
-    types:
-      - opened
-
-permissions:
-  contents: write
-  pull-requests: write
+  pull_request_target:
+    types: [opened]
 
 jobs:
   process:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - name: Checkout repository
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
           ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Update leaderboard
         run: node scripts/update-leaderboard.js "${{ github.actor }}" "${{ github.event.pull_request.number }}"
 
-      - name: Commit leaderboard update
+      - name: Commit leaderboard
         run: |
-          git checkout main
           git config user.name "github-actions[bot]"
           git config user.email "actions@github.com"
           git add leaderboard.json
           git diff --staged --quiet || git commit -m "chore: update leaderboard for PR #${{ github.event.pull_request.number }}"
           git push origin main
 
-      - name: Comment on pull request
-        uses: actions/github-script@v7
+      - name: Close PR with comment
+        uses: peter-evans/close-pull-request@v3
         with:
-          script: |
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: "Thanks for contributing! You've been added to the leaderboard 🎉"
-            });
-
-      - name: Close pull request
-        uses: actions/github-script@v7
-        with:
-          script: |
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number,
-              state: "closed"
-            });
+          comment: "Thanks for contributing! 🎉 You've been added to the leaderboard."
